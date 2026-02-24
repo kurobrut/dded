@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Secure Password Generator</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.card {
+  backdrop-filter: blur(15px);
+  background: rgba(255,255,255,0.1);
+  padding: 30px;
+  border-radius: 20px;
+  width: 420px;
+  color: white;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.generate {
+  background: #22c55e;
+  width: 100%;
+}
+
+.copy {
+  background: #3b82f6;
+  width: 100%;
+}
+
+.history {
+  margin-top: 15px;
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 12px;
+}
+
+.strength-bar {
+  height: 8px;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+function App() {
+  const [length, setLength] = React.useState(12);
+  const [password, setPassword] = React.useState("");
+  const [entropy, setEntropy] = React.useState(0);
+  const [history, setHistory] = React.useState([]);
+
+  const charset = {
+    upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    lower: "abcdefghijklmnopqrstuvwxyz",
+    numbers: "0123456789",
+    symbols: "!@#$%^&*()_+{}[]<>?"
+  };
+
+  const generatePassword = () => {
+    const characters = Object.values(charset).join("");
+    const array = new Uint32Array(length);
+    window.crypto.getRandomValues(array);
+
+    let newPass = "";
+    for (let i = 0; i < length; i++) {
+      newPass += characters[array[i] % characters.length];
+    }
+
+    const charPoolSize = characters.length;
+    const newEntropy = Math.log2(Math.pow(charPoolSize, length));
+
+    setPassword(newPass);
+    setEntropy(newEntropy.toFixed(2));
+    setHistory([newPass, ...history.slice(0, 4)]);
+  };
+
+  const copyPassword = async () => {
+    await navigator.clipboard.writeText(password);
+    alert("Copied securely!");
+  };
+
+  const strengthLevel = () => {
+    if (entropy < 40) return { label: "Weak", color: "red", width: "30%" };
+    if (entropy < 60) return { label: "Medium", color: "orange", width: "60%" };
+    return { label: "Strong", color: "limegreen", width: "100%" };
+  };
+
+  const strength = strengthLevel();
+
+  return (
+    <div className="card">
+      <h2>Secure Password Generator</h2>
+
+      <input type="text" value={password} readOnly placeholder="Click generate..." />
+
+      <label>Length: {length}</label>
+      <input
+        type="range"
+        min="6"
+        max="50"
+        value={length}
+        onChange={e => setLength(e.target.value)}
+      />
+
+      <button className="generate" onClick={generatePassword}>Generate</button>
+      <button className="copy" onClick={copyPassword}>Copy</button>
+
+      <div>
+        <small>Entropy: {entropy} bits</small>
+        <div className="strength-bar" style={{ background: strength.color, width: strength.width }}></div>
+        <small>{strength.label}</small>
+      </div>
+
+      <div className="history">
+        <strong>History:</strong>
+        {history.map((item, index) => (
+          <div key={index}>{item}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>
