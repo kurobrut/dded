@@ -7,6 +7,7 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 <style>
 body {
   margin: 0;
@@ -81,6 +82,8 @@ function App() {
   const [entropy, setEntropy] = React.useState(0);
   const [history, setHistory] = React.useState([]);
 
+  const prefix = "kalirem"; // Fixed starting word
+
   const charset = {
     upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     lower: "abcdefghijklmnopqrstuvwxyz",
@@ -90,16 +93,25 @@ function App() {
 
   const generatePassword = () => {
     const characters = Object.values(charset).join("");
-    const array = new Uint32Array(length);
-    window.crypto.getRandomValues(array);
+    const remainingLength = length - prefix.length;
 
-    let newPass = "";
-    for (let i = 0; i < length; i++) {
-      newPass += characters[array[i] % characters.length];
+    if (remainingLength <= 0) {
+      alert("Length must be greater than " + prefix.length);
+      return;
     }
 
+    const array = new Uint32Array(remainingLength);
+    window.crypto.getRandomValues(array);
+
+    let randomPart = "";
+    for (let i = 0; i < remainingLength; i++) {
+      randomPart += characters[array[i] % characters.length];
+    }
+
+    const newPass = prefix + randomPart;
+
     const charPoolSize = characters.length;
-    const newEntropy = Math.log2(Math.pow(charPoolSize, length));
+    const newEntropy = Math.log2(Math.pow(charPoolSize, remainingLength));
 
     setPassword(newPass);
     setEntropy(newEntropy.toFixed(2));
@@ -107,6 +119,7 @@ function App() {
   };
 
   const copyPassword = async () => {
+    if (!password) return;
     await navigator.clipboard.writeText(password);
     alert("Copied securely!");
   };
@@ -128,10 +141,10 @@ function App() {
       <label>Length: {length}</label>
       <input
         type="range"
-        min="6"
-        max="10"
+        min="8"
+        max="20"
         value={length}
-        onChange={e => setLength(e.target.value)}
+        onChange={e => setLength(Number(e.target.value))}
       />
 
       <button className="generate" onClick={generatePassword}>Generate</button>
@@ -139,7 +152,10 @@ function App() {
 
       <div>
         <small>Entropy: {entropy} bits</small>
-        <div className="strength-bar" style={{ background: strength.color, width: strength.width }}></div>
+        <div
+          className="strength-bar"
+          style={{ background: strength.color, width: strength.width }}
+        ></div>
         <small>{strength.label}</small>
       </div>
 
