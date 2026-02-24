@@ -22,24 +22,21 @@ body {
 
 .card {
   backdrop-filter: blur(25px);
-  background: rgba(255,255,255,0.08);
-  padding: 35px;
+  background: rgba(255,255,255,0.07);
+  padding: 30px;
   border-radius: 25px;
   width: 420px;
-  height: 560px;              /* FIXED HEIGHT */
+  height: 580px;
   color: white;
-  box-shadow: 0 15px 50px rgba(0,0,0,0.5);
-  display: flex;              /* FLEX LAYOUT */
+  box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+  display: flex;
   flex-direction: column;
-}
-
-.card:hover {
-  transform: translateY(-5px);
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  font-weight: 600;
 }
 
 input[type="text"] {
@@ -47,7 +44,7 @@ input[type="text"] {
   padding: 12px;
   border-radius: 12px;
   border: none;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   font-size: 14px;
   letter-spacing: 1px;
 }
@@ -57,50 +54,81 @@ input[type="range"] {
 }
 
 button {
-  padding: 12px;
+  padding: 11px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  margin-top: 12px;
+  margin-top: 10px;
   font-weight: bold;
-  transition: 0.2s;
+  transition: 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.97);
 }
 
 .generate {
   background: linear-gradient(90deg, #22c55e, #16a34a);
-  width: 100%;
   color: white;
 }
 
 .copy {
   background: linear-gradient(90deg, #3b82f6, #2563eb);
-  width: 100%;
   color: white;
 }
 
-button:hover {
-  transform: scale(1.03);
-}
-
-.history {
-  margin-top: 18px;
-  font-size: 12px;
-  opacity: 0.8;
-
-  flex: 1;                   /* Takes remaining space */
-  overflow-y: auto;          /* Scroll instead of expanding */
-  padding-right: 5px;
+.clear {
+  background: #ef4444;
+  color: white;
 }
 
 .strength-container {
-  margin-top: 15px;
+  margin-top: 12px;
+}
+
+.strength-bar-bg {
+  background: rgba(255,255,255,0.1);
+  height: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 6px;
 }
 
 .strength-bar {
-  height: 10px;
-  border-radius: 20px;
-  margin-top: 6px;
-  transition: 0.4s ease;
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.history {
+  margin-top: 15px;
+  font-size: 12px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.history::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+.history-item {
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.copy-feedback {
+  font-size: 12px;
+  color: #22c55e;
+  margin-top: 5px;
 }
 </style>
 </head>
@@ -115,6 +143,7 @@ function App() {
   const [password, setPassword] = React.useState("");
   const [entropy, setEntropy] = React.useState(0);
   const [history, setHistory] = React.useState([]);
+  const [copied, setCopied] = React.useState(false);
 
   const prefixes = [
     "kalirem","rem","kali","Kali","Rem",
@@ -123,28 +152,21 @@ function App() {
 
   const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
-  // Secure random number without modulo bias
   const secureRandomIndex = (max) => {
     const array = new Uint32Array(1);
     const limit = Math.floor(4294967296 / max) * max;
-
     let random;
     do {
       window.crypto.getRandomValues(array);
       random = array[0];
     } while (random >= limit);
-
     return random % max;
   };
 
   const generatePassword = () => {
-
     const prefix = prefixes[secureRandomIndex(prefixes.length)];
 
-    if (length <= prefix.length) {
-      alert("Length must be greater than prefix length");
-      return;
-    }
+    if (length <= prefix.length) return;
 
     const remainingLength = length - prefix.length;
 
@@ -153,34 +175,39 @@ function App() {
       randomChars.push(charset[secureRandomIndex(charset.length)]);
     }
 
-    // Insert prefix at random position
     const insertPosition = secureRandomIndex(randomChars.length + 1);
     randomChars.splice(insertPosition, 0, ...prefix.split(""));
 
     const finalPassword = randomChars.join("");
 
-    // Accurate entropy calculation
-    const poolSize = charset.length;
-    const totalEntropy = finalPassword.length * Math.log2(poolSize);
+    const totalEntropy = finalPassword.length * Math.log2(charset.length);
 
     setPassword(finalPassword);
-    setEntropy(totalEntropy.toFixed(2));
+    setEntropy(totalEntropy);
     setHistory([finalPassword, ...history.slice(0, 4)]);
+    setCopied(false);
   };
 
   const copyPassword = async () => {
     if (!password) return;
     await navigator.clipboard.writeText(password);
-    alert("Copied securely!");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
-  const strengthLevel = () => {
-    if (entropy < 50) return { label: "Weak", color: "red", width: "30%" };
-    if (entropy < 80) return { label: "Medium", color: "orange", width: "60%" };
-    return { label: "Strong", color: "limegreen", width: "100%" };
-  };
+  const clearHistory = () => setHistory([]);
 
-  const strength = strengthLevel();
+  const strengthPercentage = Math.min((entropy / 120) * 100, 100);
+
+  const strengthColor =
+    entropy < 50 ? "red" :
+    entropy < 80 ? "orange" :
+    "limegreen";
+
+  const strengthLabel =
+    entropy < 50 ? "Weak" :
+    entropy < 80 ? "Medium" :
+    "Strong";
 
   return (
     <div className="card">
@@ -192,28 +219,47 @@ function App() {
       <input
         type="range"
         min="10"
-        max="24"
+        max="28"
         value={length}
         onChange={e => setLength(Number(e.target.value))}
       />
 
-      <button className="generate" onClick={generatePassword}>Generate Secure Password</button>
-      <button className="copy" onClick={copyPassword}>Copy to Clipboard</button>
+      <button className="generate" onClick={generatePassword}>
+        Generate Secure Password
+      </button>
+
+      <button className="copy" onClick={copyPassword}>
+        Copy to Clipboard
+      </button>
+
+      {copied && <div className="copy-feedback">Copied securely ✔</div>}
 
       <div className="strength-container">
-        <small>Entropy: {entropy} bits</small>
-        <div
-          className="strength-bar"
-          style={{ background: strength.color, width: strength.width }}
-        ></div>
-        <small>{strength.label}</small>
+        <small>Entropy: {entropy.toFixed(2)} bits</small>
+        <div className="strength-bar-bg">
+          <div
+            className="strength-bar"
+            style={{
+              width: strengthPercentage + "%",
+              background: strengthColor
+            }}
+          />
+        </div>
+        <small>{strengthLabel}</small>
       </div>
 
       <div className="history">
         <strong>History:</strong>
         {history.map((item, index) => (
-          <div key={index}>{item}</div>
+          <div key={index} className="history-item">
+            {item}
+          </div>
         ))}
+        {history.length > 0 && (
+          <button className="clear" onClick={clearHistory}>
+            Clear History
+          </button>
+        )}
       </div>
     </div>
   );
