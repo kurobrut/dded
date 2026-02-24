@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Secure Password Generator</title>
+<title>Advanced Secure Password Generator</title>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,7 +12,7 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #0f172a, #1e293b);
   display: flex;
   justify-content: center;
@@ -20,53 +21,82 @@ body {
 }
 
 .card {
-  backdrop-filter: blur(15px);
-  background: rgba(255,255,255,0.1);
-  padding: 30px;
-  border-radius: 20px;
+  backdrop-filter: blur(25px);
+  background: rgba(255,255,255,0.08);
+  padding: 35px;
+  border-radius: 25px;
   width: 420px;
   color: white;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+  transition: 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 input[type="text"] {
   width: 100%;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+input[type="range"] {
+  width: 100%;
 }
 
 button {
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 12px;
   font-weight: bold;
+  transition: 0.2s;
 }
 
 .generate {
-  background: #22c55e;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
   width: 100%;
+  color: white;
 }
 
 .copy {
-  background: #3b82f6;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
   width: 100%;
+  color: white;
+}
+
+button:hover {
+  transform: scale(1.03);
 }
 
 .history {
-  margin-top: 15px;
+  margin-top: 18px;
   max-height: 100px;
   overflow-y: auto;
   font-size: 12px;
+  opacity: 0.8;
+}
+
+.strength-container {
+  margin-top: 15px;
 }
 
 .strength-bar {
-  height: 8px;
-  border-radius: 10px;
-  margin-top: 5px;
+  height: 10px;
+  border-radius: 20px;
+  margin-top: 6px;
+  transition: 0.4s ease;
 }
 </style>
 </head>
@@ -77,45 +107,61 @@ button {
 <script type="text/babel">
 
 function App() {
-  const [length, setLength] = React.useState(12);
+  const [length, setLength] = React.useState(16);
   const [password, setPassword] = React.useState("");
   const [entropy, setEntropy] = React.useState(0);
   const [history, setHistory] = React.useState([]);
 
-  const prefix = "kalirem"; // Fixed starting word
+  const prefixes = [
+    "kalirem","rem","kali","Kali","Rem",
+    "KaliRem","KALIREM","KALI","REM"
+  ];
 
-  const charset = {
-    upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-    lower: "abcdefghijklmnopqrstuvwxyz",
-    numbers: "0123456789",
-    symbols: "!@#$%^&*"
+  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+
+  // Secure random number without modulo bias
+  const secureRandomIndex = (max) => {
+    const array = new Uint32Array(1);
+    const limit = Math.floor(4294967296 / max) * max;
+
+    let random;
+    do {
+      window.crypto.getRandomValues(array);
+      random = array[0];
+    } while (random >= limit);
+
+    return random % max;
   };
 
   const generatePassword = () => {
-    const characters = Object.values(charset).join("");
-    const remainingLength = length - prefix.length;
 
-    if (remainingLength <= 0) {
-      alert("Length must be greater than " + prefix.length);
+    const prefix = prefixes[secureRandomIndex(prefixes.length)];
+
+    if (length <= prefix.length) {
+      alert("Length must be greater than prefix length");
       return;
     }
 
-    const array = new Uint32Array(remainingLength);
-    window.crypto.getRandomValues(array);
+    const remainingLength = length - prefix.length;
 
-    let randomPart = "";
+    let randomChars = [];
     for (let i = 0; i < remainingLength; i++) {
-      randomPart += characters[array[i] % characters.length];
+      randomChars.push(charset[secureRandomIndex(charset.length)]);
     }
 
-    const newPass = prefix + randomPart;
+    // Insert prefix at random position
+    const insertPosition = secureRandomIndex(randomChars.length + 1);
+    randomChars.splice(insertPosition, 0, ...prefix.split(""));
 
-    const charPoolSize = characters.length;
-    const newEntropy = Math.log2(Math.pow(charPoolSize, remainingLength));
+    const finalPassword = randomChars.join("");
 
-    setPassword(newPass);
-    setEntropy(newEntropy.toFixed(2));
-    setHistory([newPass, ...history.slice(0, 4)]);
+    // Accurate entropy calculation
+    const poolSize = charset.length;
+    const totalEntropy = finalPassword.length * Math.log2(poolSize);
+
+    setPassword(finalPassword);
+    setEntropy(totalEntropy.toFixed(2));
+    setHistory([finalPassword, ...history.slice(0, 4)]);
   };
 
   const copyPassword = async () => {
@@ -125,8 +171,8 @@ function App() {
   };
 
   const strengthLevel = () => {
-    if (entropy < 40) return { label: "Weak", color: "red", width: "30%" };
-    if (entropy < 60) return { label: "Medium", color: "orange", width: "60%" };
+    if (entropy < 50) return { label: "Weak", color: "red", width: "30%" };
+    if (entropy < 80) return { label: "Medium", color: "orange", width: "60%" };
     return { label: "Strong", color: "limegreen", width: "100%" };
   };
 
@@ -134,23 +180,23 @@ function App() {
 
   return (
     <div className="card">
-      <h2>Secure Password Generator</h2>
+      <h2>🔐 Advanced Password Generator</h2>
 
       <input type="text" value={password} readOnly placeholder="Click generate..." />
 
-      <label>Length: {length}</label>
+      <label>Password Length: {length}</label>
       <input
         type="range"
-        min="8"
-        max="12"
+        min="10"
+        max="24"
         value={length}
         onChange={e => setLength(Number(e.target.value))}
       />
 
-      <button className="generate" onClick={generatePassword}>Generate</button>
-      <button className="copy" onClick={copyPassword}>Copy</button>
+      <button className="generate" onClick={generatePassword}>Generate Secure Password</button>
+      <button className="copy" onClick={copyPassword}>Copy to Clipboard</button>
 
-      <div>
+      <div className="strength-container">
         <small>Entropy: {entropy} bits</small>
         <div
           className="strength-bar"
