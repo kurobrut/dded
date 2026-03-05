@@ -3,64 +3,111 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Advanced Secure Password Generator</title>
+<title>Modern Secure Password Generator</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #0ea5e9, #9333ea);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
 
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .card {
-  backdrop-filter: blur(25px);
-  background: rgba(255,255,255,0.07);
-  padding: 30px;
-  border-radius: 25px;
   width: 420px;
-  height: 480px;
+  max-width: 95%;
+  padding: 35px;
+  border-radius: 28px;
+  backdrop-filter: blur(30px);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
   color: white;
-  box-shadow: 0 15px 50px rgba(0,0,0,0.6);
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.password-box {
+  position: relative;
 }
 
 input[type="text"] {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 14px;
   border: none;
-  margin-bottom: 12px;
   font-size: 14px;
   letter-spacing: 1px;
+  outline: none;
+  background: rgba(255,255,255,0.12);
+  color: white;
+  transition: 0.3s;
+}
+
+input[type="text"]:focus {
+  background: rgba(255,255,255,0.2);
 }
 
 input[type="range"] {
   width: 100%;
+  margin: 10px 0 15px;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
 }
 
 button {
-  padding: 11px;
-  border-radius: 12px;
+  padding: 12px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
-  margin-top: 10px;
-  font-weight: bold;
-  transition: 0.2s ease;
+  font-weight: 600;
+  margin-top: 12px;
+  transition: 0.25s ease;
+  backdrop-filter: blur(10px);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
 }
 
 button:active {
@@ -77,58 +124,41 @@ button:active {
   color: white;
 }
 
-.clear {
-  background: #ef4444;
-  color: white;
-}
-
 .strength-container {
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
 .strength-bar-bg {
-  background: rgba(255,255,255,0.1);
   height: 10px;
   border-radius: 20px;
   overflow: hidden;
+  background: rgba(255,255,255,0.15);
   margin-top: 6px;
 }
 
 .strength-bar {
   height: 100%;
-  transition: width 0.4s ease;
+  transition: width 0.5s ease, background 0.5s ease;
 }
 
 .history {
-  margin-top: 15px;
+  margin-top: 18px;
   font-size: 12px;
-  flex: 1;
+  max-height: 100px;
   overflow-y: auto;
-  padding-right: 6px;
+  opacity: 0.8;
 }
 
-.history::-webkit-scrollbar {
-  width: 6px;
-}
-
-.history::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 10px;
-}
-
-.history-item {
-  opacity: 0;
-  animation: fadeIn 0.3s forwards;
-}
-
-@keyframes fadeIn {
-  to { opacity: 1; }
+.history div {
+  margin-bottom: 4px;
+  animation: fadeIn 0.4s ease;
 }
 
 .copy-feedback {
   font-size: 12px;
+  margin-top: 6px;
   color: #22c55e;
-  margin-top: 5px;
+  animation: fadeIn 0.3s ease;
 }
 </style>
 </head>
@@ -139,48 +169,52 @@ button:active {
 <script type="text/babel">
 
 function App() {
-  const [length, setLength] = React.useState(16);
+  const [length, setLength] = React.useState(20);
   const [password, setPassword] = React.useState("");
   const [entropy, setEntropy] = React.useState(0);
   const [history, setHistory] = React.useState([]);
   const [copied, setCopied] = React.useState(false);
 
-  const prefixes = [
-    "kalirem","rem","kali","Kali","Rem",
-    "KaliRem","KALIREM","KALI","REM"
-  ];
+  const [useUpper, setUseUpper] = React.useState(true);
+  const [useLower, setUseLower] = React.useState(true);
+  const [useNumbers, setUseNumbers] = React.useState(true);
+  const [useSymbols, setUseSymbols] = React.useState(true);
 
-  const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const numbers = "0123456789";
+  const symbols = "!@#$%^&*()_+[]{}|;:,.<>?";
 
-  const secureRandomIndex = (max) => {
+  const secureRandom = (max) => {
     const array = new Uint32Array(1);
-    const limit = Math.floor(4294967296 / max) * max;
-    let random;
-    do {
-      window.crypto.getRandomValues(array);
-      random = array[0];
-    } while (random >= limit);
-    return random % max;
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
   };
 
   const generatePassword = () => {
-    const prefix = prefixes[secureRandomIndex(prefixes.length)];
+    let charset = "";
+    let required = [];
 
-    if (length <= prefix.length) return;
+    if (useUpper) { charset += upper; required.push(upper[secureRandom(upper.length)]); }
+    if (useLower) { charset += lower; required.push(lower[secureRandom(lower.length)]); }
+    if (useNumbers) { charset += numbers; required.push(numbers[secureRandom(numbers.length)]); }
+    if (useSymbols) { charset += symbols; required.push(symbols[secureRandom(symbols.length)]); }
 
-    const remainingLength = length - prefix.length;
+    if (!charset) return alert("Select at least one option.");
 
-    let randomChars = [];
-    for (let i = 0; i < remainingLength; i++) {
-      randomChars.push(charset[secureRandomIndex(charset.length)]);
+    let result = [...required];
+
+    for (let i = result.length; i < length; i++) {
+      result.push(charset[secureRandom(charset.length)]);
     }
 
-    const insertPosition = secureRandomIndex(randomChars.length + 1);
-    randomChars.splice(insertPosition, 0, ...prefix.split(""));
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = secureRandom(i + 1);
+      [result[i], result[j]] = [result[j], result[i]];
+    }
 
-    const finalPassword = randomChars.join("");
-
-    const totalEntropy = finalPassword.length * Math.log2(charset.length);
+    const finalPassword = result.join("");
+    const totalEntropy = length * Math.log2(charset.length);
 
     setPassword(finalPassword);
     setEntropy(totalEntropy);
@@ -195,44 +229,50 @@ function App() {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const clearHistory = () => setHistory([]);
-
-  const strengthPercentage = Math.min((entropy / 120) * 100, 100);
-
+  const strengthPercent = Math.min((entropy / 180) * 100, 100);
   const strengthColor =
-    entropy < 50 ? "red" :
-    entropy < 80 ? "orange" :
-    "limegreen";
+    entropy < 60 ? "#ef4444" :
+    entropy < 100 ? "#f59e0b" :
+    "#22c55e";
 
   const strengthLabel =
-    entropy < 50 ? "Weak" :
-    entropy < 80 ? "Medium" :
+    entropy < 60 ? "Weak" :
+    entropy < 100 ? "Medium" :
     "Strong";
 
   return (
     <div className="card">
-      <h2>🔐 Advanced Password Generator</h2>
+      <h2>🔐 Secure Password Generator</h2>
 
-      <input type="text" value={password} readOnly placeholder="Click generate..." />
+      <div className="password-box">
+        <input type="text" value={password} readOnly placeholder="Generate your password..." />
+      </div>
 
       <label>Password Length: {length}</label>
       <input
         type="range"
-        min="8"
-        max="15"
+        min="12"
+        max="32"
         value={length}
         onChange={e => setLength(Number(e.target.value))}
       />
 
+      <div className="options">
+        <label><input type="checkbox" checked={useUpper} onChange={() => setUseUpper(!useUpper)} /> Uppercase</label>
+        <label><input type="checkbox" checked={useLower} onChange={() => setUseLower(!useLower)} /> Lowercase</label>
+        <label><input type="checkbox" checked={useNumbers} onChange={() => setUseNumbers(!useNumbers)} /> Numbers</label>
+        <label><input type="checkbox" checked={useSymbols} onChange={() => setUseSymbols(!useSymbols)} /> Symbols</label>
+      </div>
+
       <button className="generate" onClick={generatePassword}>
-        Generate Secure Password
+        Generate Password
       </button>
 
       <button className="copy" onClick={copyPassword}>
         Copy to Clipboard
       </button>
 
-      {copied && <div className="copy-feedback">Copied securely ✔</div>}
+      {copied && <div className="copy-feedback">Copied ✔</div>}
 
       <div className="strength-container">
         <small>Entropy: {entropy.toFixed(2)} bits</small>
@@ -240,7 +280,7 @@ function App() {
           <div
             className="strength-bar"
             style={{
-              width: strengthPercentage + "%",
+              width: strengthPercent + "%",
               background: strengthColor
             }}
           />
@@ -249,17 +289,10 @@ function App() {
       </div>
 
       <div className="history">
-        <strong>History:</strong>
+        <strong>Recent:</strong>
         {history.map((item, index) => (
-          <div key={index} className="history-item">
-            {item}
-          </div>
+          <div key={index}>{item}</div>
         ))}
-        {history.length > 0 && (
-          <button className="clear" onClick={clearHistory}>
-            Clear History
-          </button>
-        )}
       </div>
     </div>
   );
