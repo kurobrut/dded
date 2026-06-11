@@ -23,7 +23,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 @keyframes gradientMove {
@@ -33,10 +34,10 @@ body {
 }
 
 .card {
-  width: 420px;
-  max-width: 95%;
-  padding: 35px;
-  border-radius: 28px;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  border-radius: 24px;
   backdrop-filter: blur(30px);
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
@@ -52,113 +53,346 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 500px) {
+  .card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+}
+
 h2 {
   text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
+  margin: 0 0 24px 0;
+  font-weight: 700;
   letter-spacing: 0.5px;
+  font-size: 20px;
 }
 
-.password-box {
+.password-display {
   position: relative;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  margin-bottom: 20px;
 }
 
-input[type="text"] {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
+.password-input {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 12px;
   border: none;
   font-size: 14px;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   outline: none;
   background: rgba(255,255,255,0.12);
   color: white;
+  font-family: 'Courier New', monospace;
   transition: 0.3s;
 }
 
-input[type="text"]:focus {
+.password-input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.password-input:focus {
   background: rgba(255,255,255,0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.icon-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  border: none;
+  background: rgba(59, 130, 246, 0.2);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: 0.25s ease;
+  flex-shrink: 0;
+}
+
+.icon-button:hover {
+  background: rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+}
+
+.icon-button:active {
+  transform: scale(0.95);
+}
+
+.preset-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.preset-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: 0.25s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.4);
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 12px;
+}
+
+.slider-container {
+  margin-bottom: 8px;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 input[type="range"] {
   width: 100%;
-  margin: 10px 0 15px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.15);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.options label {
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 400px) {
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkbox-label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  margin-bottom: 6px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: 0.2s;
 }
 
-button {
+.checkbox-label:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button.primary {
+  flex: 1;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  margin-top: 12px;
+  font-size: 13px;
   transition: 0.25s ease;
   backdrop-filter: blur(10px);
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-}
-
-button:active {
-  transform: scale(0.97);
-}
-
-.generate {
   background: linear-gradient(90deg, #22c55e, #16a34a);
   color: white;
 }
 
-.copy {
+button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
+}
+
+button.primary:active {
+  transform: scale(0.97);
+}
+
+button.secondary {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: 0.25s ease;
+  backdrop-filter: blur(10px);
   background: linear-gradient(90deg, #3b82f6, #2563eb);
   color: white;
 }
 
+button.secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+button.secondary:active {
+  transform: scale(0.97);
+}
+
 .strength-container {
-  margin-top: 18px;
+  margin-bottom: 20px;
+}
+
+.strength-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 8px;
 }
 
 .strength-bar-bg {
-  height: 10px;
+  height: 8px;
   border-radius: 20px;
   overflow: hidden;
   background: rgba(255,255,255,0.15);
-  margin-top: 6px;
+  margin-bottom: 8px;
 }
 
 .strength-bar {
   height: 100%;
   transition: width 0.5s ease, background 0.5s ease;
+  border-radius: 20px;
+}
+
+.strength-label {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
 }
 
 .history {
-  margin-top: 18px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 12px;
   font-size: 12px;
-  max-height: 100px;
+  max-height: 120px;
   overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.history-title {
+  font-weight: 600;
+  margin-bottom: 8px;
   opacity: 0.8;
+  font-size: 11px;
+  text-transform: uppercase;
 }
 
-.history div {
-  margin-bottom: 4px;
-  animation: fadeIn 0.4s ease;
+.history-item {
+  padding: 4px 0;
+  font-family: 'Courier New', monospace;
+  opacity: 0.7;
+  word-break: break-all;
+  animation: slideIn 0.4s ease;
 }
 
-.copy-feedback {
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.feedback {
   font-size: 12px;
-  margin-top: 6px;
-  color: #22c55e;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
   animation: fadeIn 0.3s ease;
+}
+
+.feedback.success {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+}
+
+.feedback.info {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
 }
 </style>
 </head>
@@ -169,21 +403,28 @@ button:active {
 <script type="text/babel">
 
 function App() {
-  const [length, setLength] = React.useState(15);
+  const [length, setLength] = React.useState(16);
   const [password, setPassword] = React.useState("");
   const [entropy, setEntropy] = React.useState(0);
   const [history, setHistory] = React.useState([]);
-  const [copied, setCopied] = React.useState(false);
+  const [feedback, setFeedback] = React.useState("");
 
   const [useUpper, setUseUpper] = React.useState(true);
   const [useLower, setUseLower] = React.useState(true);
   const [useNumbers, setUseNumbers] = React.useState(true);
   const [useSymbols, setUseSymbols] = React.useState(true);
+  const [excludeAmbiguous, setExcludeAmbiguous] = React.useState(false);
 
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const upperAmbiguous = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // removed I, O
+  
   const lower = "abcdefghijklmnopqrstuvwxyz";
+  const lowerAmbiguous = "abcdefghjkmnpqrstuvwxyz"; // removed i, l, o
+  
   const numbers = "0123456789";
-  const symbols = "!@#$%^&*_+?";
+  const numbersAmbiguous = "123456789"; // removed 0
+  
+  const symbols = "!@#$%^&*_+-=?";
 
   const secureRandom = (max) => {
     const array = new Uint32Array(1);
@@ -195,12 +436,31 @@ function App() {
     let charset = "";
     let required = [];
 
-    if (useUpper) { charset += upper; required.push(upper[secureRandom(upper.length)]); }
-    if (useLower) { charset += lower; required.push(lower[secureRandom(lower.length)]); }
-    if (useNumbers) { charset += numbers; required.push(numbers[secureRandom(numbers.length)]); }
-    if (useSymbols) { charset += symbols; required.push(symbols[secureRandom(symbols.length)]); }
+    const upperSet = excludeAmbiguous ? upperAmbiguous : upper;
+    const lowerSet = excludeAmbiguous ? lowerAmbiguous : lower;
+    const numberSet = excludeAmbiguous ? numbersAmbiguous : numbers;
 
-    if (!charset) return alert("Select at least one option.");
+    if (useUpper) { 
+      charset += upperSet; 
+      required.push(upperSet[secureRandom(upperSet.length)]); 
+    }
+    if (useLower) { 
+      charset += lowerSet; 
+      required.push(lowerSet[secureRandom(lowerSet.length)]); 
+    }
+    if (useNumbers) { 
+      charset += numberSet; 
+      required.push(numberSet[secureRandom(numberSet.length)]); 
+    }
+    if (useSymbols) { 
+      charset += symbols; 
+      required.push(symbols[secureRandom(symbols.length)]); 
+    }
+
+    if (!charset) {
+      setFeedback("Select at least one option");
+      return;
+    }
 
     let result = [...required];
 
@@ -219,63 +479,135 @@ function App() {
     setPassword(finalPassword);
     setEntropy(totalEntropy);
     setHistory([finalPassword, ...history.slice(0, 4)]);
-    setCopied(false);
+    setFeedback("");
+  };
+
+  const applyPreset = (len, upper, lower, numbers, symbols) => {
+    setLength(len);
+    setUseUpper(upper);
+    setUseLower(lower);
+    setUseNumbers(numbers);
+    setUseSymbols(symbols);
+    setTimeout(() => generatePassword(), 0);
   };
 
   const copyPassword = async () => {
     if (!password) return;
-    await navigator.clipboard.writeText(password);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(password);
+      setFeedback("Copied to clipboard ✔");
+      setTimeout(() => setFeedback(""), 1500);
+    } catch {
+      setFeedback("Failed to copy");
+    }
   };
 
-  const strengthPercent = Math.min((entropy / 180) * 100, 100);
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      generatePassword();
+    }
+  };
+
+  const strengthPercent = Math.min((entropy / 200) * 100, 100);
   const strengthColor =
-    entropy < 60 ? "#ef4444" :
+    entropy < 50 ? "#ef4444" :
     entropy < 100 ? "#f59e0b" :
-    "#22c55e";
+    entropy < 150 ? "#22c55e" :
+    "#10b981";
 
   const strengthLabel =
-    entropy < 60 ? "Weak" :
-    entropy < 100 ? "Medium" :
+    entropy < 50 ? "Weak" :
+    entropy < 100 ? "Fair" :
+    entropy < 150 ? "Good" :
     "Strong";
 
   return (
     <div className="card">
-      <h2>🔐 Secure Password Generator</h2>
+      <h2>🔐 Password Generator</h2>
 
-      <div className="password-box">
-        <input type="text" value={password} readOnly placeholder="Generate your password..." />
+      <div className="password-display">
+        <input 
+          type="text" 
+          className="password-input"
+          value={password} 
+          readOnly 
+          placeholder="Generate a password..."
+          onKeyPress={handleKeyPress}
+        />
+        <button className="icon-button" onClick={generatePassword} title="Regenerate (Enter)" aria-label="Regenerate password">
+          🔄
+        </button>
+        <button className="icon-button" onClick={copyPassword} title="Copy" aria-label="Copy to clipboard">
+          📋
+        </button>
       </div>
 
-      <label>Password Length: {length}</label>
-      <input
-        type="range"
-        min="8"
-        max="15"
-        value={length}
-        onChange={e => setLength(Number(e.target.value))}
-      />
-
-      <div className="options">
-        <label><input type="checkbox" checked={useUpper} onChange={() => setUseUpper(!useUpper)} /> Uppercase</label>
-        <label><input type="checkbox" checked={useLower} onChange={() => setUseLower(!useLower)} /> Lowercase</label>
-        <label><input type="checkbox" checked={useNumbers} onChange={() => setUseNumbers(!useNumbers)} /> Numbers</label>
-        <label><input type="checkbox" checked={useSymbols} onChange={() => setUseSymbols(!useSymbols)} /> Symbols</label>
+      <div className="preset-buttons">
+        <button className="preset-btn" onClick={() => applyPreset(12, true, true, false, false)}>Light</button>
+        <button className="preset-btn" onClick={() => applyPreset(16, true, true, true, false)}>Standard</button>
+        <button className="preset-btn" onClick={() => applyPreset(20, true, true, true, true)}>Strong</button>
       </div>
 
-      <button className="generate" onClick={generatePassword}>
-        Generate Password
-      </button>
+      <div className="section">
+        <div className="section-title">Length & Complexity</div>
+        <div className="slider-container">
+          <div className="slider-label">
+            <label htmlFor="length-slider">Password Length</label>
+            <span>{length}</span>
+          </div>
+          <input
+            id="length-slider"
+            type="range"
+            min="8"
+            max="32"
+            value={length}
+            onChange={e => setLength(Number(e.target.value))}
+            aria-label="Password length"
+          />
+        </div>
+      </div>
 
-      <button className="copy" onClick={copyPassword}>
-        Copy to Clipboard
-      </button>
+      <div className="section">
+        <div className="section-title">Character Types</div>
+        <div className="checkbox-group">
+          <label className="checkbox-label">
+            <input type="checkbox" checked={useUpper} onChange={() => setUseUpper(!useUpper)} aria-label="Include uppercase letters" />
+            Uppercase (A-Z)
+          </label>
+          <label className="checkbox-label">
+            <input type="checkbox" checked={useLower} onChange={() => setUseLower(!useLower)} aria-label="Include lowercase letters" />
+            Lowercase (a-z)
+          </label>
+          <label className="checkbox-label">
+            <input type="checkbox" checked={useNumbers} onChange={() => setUseNumbers(!useNumbers)} aria-label="Include numbers" />
+            Numbers (0-9)
+          </label>
+          <label className="checkbox-label">
+            <input type="checkbox" checked={useSymbols} onChange={() => setUseSymbols(!useSymbols)} aria-label="Include symbols" />
+            Symbols (!@#$%)
+          </label>
+        </div>
+      </div>
 
-      {copied && <div className="copy-feedback">Copied ✔</div>}
+      <div className="section">
+        <label className="checkbox-label">
+          <input type="checkbox" checked={excludeAmbiguous} onChange={() => setExcludeAmbiguous(!excludeAmbiguous)} aria-label="Exclude ambiguous characters" />
+          Exclude ambiguous (0, O, l, 1, etc.)
+        </label>
+      </div>
+
+      <div className="button-group">
+        <button className="primary" onClick={generatePassword}>Generate</button>
+        <button className="secondary" onClick={copyPassword}>Copy</button>
+      </div>
+
+      {feedback && <div className={`feedback ${feedback.includes("Failed") ? "error" : "success"}`}>{feedback}</div>}
 
       <div className="strength-container">
-        <small>Entropy: {entropy.toFixed(2)} bits</small>
+        <div className="strength-header">
+          <span>Strength</span>
+          <span>{entropy.toFixed(1)} bits</span>
+        </div>
         <div className="strength-bar-bg">
           <div
             className="strength-bar"
@@ -285,15 +617,19 @@ function App() {
             }}
           />
         </div>
-        <small>{strengthLabel}</small>
+        <div className="strength-label" style={{ color: strengthColor }}>
+          {strengthLabel}
+        </div>
       </div>
 
-      <div className="history">
-        <strong>Recent:</strong>
-        {history.map((item, index) => (
-          <div key={index}>{item}</div>
-        ))}
-      </div>
+      {history.length > 0 && (
+        <div className="history">
+          <div className="history-title">Recent Passwords</div>
+          {history.map((item, index) => (
+            <div key={index} className="history-item">{item}</div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
